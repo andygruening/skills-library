@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/design-architect/theme.schema.json",
+  "title": "Design Architect theme",
+  "oneOf": [
+    { "$ref": "#/$defs/omsRichTheme" },
+    { "$ref": "#/$defs/legacyTheme" }
+  ],
+  "$defs": {
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
+    },
+    "shadow": {
+      "type": "string",
+      "minLength": 1
+    },
+    "borderScale": {
+      "type": "string",
+      "enum": ["none", "small", "medium", "large"]
+    },
+    "omsRichTheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "description",
+        "colors",
+        "typography",
+        "spacing",
+        "radii",
+        "borders",
+        "shadows",
+        "motion",
+        "components"
+      ],
+      "properties": {
+        "$schema": { "type": "string" },
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "colors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["brand", "background", "foreground", "border", "button", "semantic"],
+          "properties": {
+            "brand": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["default", "hover", "ring", "surface", "border"],
+              "properties": {
+                "default": { "$ref": "#/$defs/color" },
+                "hover": { "$ref": "#/$defs/color" },
+                "ring": { "$ref": "#/$defs/color" },
+                "surface": { "$ref": "#/$defs/color" },
+                "border": { "$ref": "#/$defs/color" }
+              }
+            },
+            "background": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["page", "canvas", "surface", "surfaceHover", "surfaceSelected", "surfaceInverse", "search", "searchActive", "searchSelected"],
+              "properties": {
+                "page": { "$ref": "#/$defs/color" },
+                "canvas": { "$ref": "#/$defs/color" },
+                "surface": { "$ref": "#/$defs/color" },
+                "surfaceHover": { "$ref": "#/$defs/color" },
+                "surfaceSelected": { "$ref": "#/$defs/color" },
+                "surfaceInverse": { "$ref": "#/$defs/color" },
+                "search": { "$ref": "#/$defs/color" },
+                "searchActive": { "$ref": "#/$defs/color" },
+                "searchSelected": { "$ref": "#/$defs/color" }
+              }
+            },
+            "foreground": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["primary", "secondary", "tertiary", "disabled", "inverse", "link", "linkHover"],
+              "properties": {
+                "primary": { "$ref": "#/$defs/color" },
+                "secondary": { "$ref": "#/$defs/color" },
+                "tertiary": { "$ref": "#/$defs/color" },
+                "disabled": { "$ref": "#/$defs/color" },
+                "inverse": { "$ref": "#/$defs/color" },
+                "link": { "$ref": "#/$defs/color" },
+                "linkHover": { "$ref": "#/$defs/color" }
+              }
+            },
+            "border": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["default", "subtle", "hover", "strongHover", "focus", "divider"],
+              "properties": {
+                "default": { "$ref": "#/$defs/color" },
+                "subtle": { "$ref": "#/$defs/color" },
+                "hover": { "$ref": "#/$defs/color" },
+                "strongHover": { "$ref": "#/$defs/color" },
+                "focus": { "$ref": "#/$defs/color" },
+                "divider": { "type": "string", "minLength": 1 }
+              }
+            },
+            "button": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "primaryBg",
+                "primaryText",
+                "primaryHoverBg",
+                "primaryActiveBg",
+                "secondaryBg",
+                "secondaryText",
+                "secondaryBorder",
+                "secondaryHoverBorder",
+                "secondaryActiveBg",
+                "secondaryActiveBorder",
+                "disabledBg",
+                "disabledText"
+              ],
+              "properties": {
+                "primaryBg": { "$ref": "#/$defs/color" },
+                "primaryText": { "$ref": "#/$defs/color" },
+                "primaryHoverBg": { "$ref": "#/$defs/color" },
+                "primaryActiveBg": { "$ref": "#/$defs/color" },
+                "secondaryBg": { "$ref": "#/$defs/color" },
+                "secondaryText": { "$ref": "#/$defs/color" },
+                "secondaryBorder": { "$ref": "#/$defs/color" },
+                "secondaryHoverBorder": { "$ref": "#/$defs/color" },
+                "secondaryActiveBg": { "$ref": "#/$defs/color" },
+                "secondaryActiveBorder": { "$ref": "#/$defs/color" },
+                "disabledBg": { "$ref": "#/$defs/color" },
+                "disabledText": { "$ref": "#/$defs/color" }
+              }
+            },
+            "semantic": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["info", "success", "warning", "danger"],
+              "properties": {
+                "info": { "$ref": "#/$defs/semanticColor" },
+                "success": { "$ref": "#/$defs/semanticColor" },
+                "warning": { "$ref": "#/$defs/semanticColor" },
+                "danger": {
+                  "allOf": [
+                    { "$ref": "#/$defs/semanticColor" },
+                    {
+                      "type": "object",
+                      "required": ["buttonBg", "buttonHoverBg", "buttonActiveBg"],
+                      "properties": {
+                        "buttonBg": { "$ref": "#/$defs/color" },
+                        "buttonHoverBg": { "$ref": "#/$defs/color" },
+                        "buttonActiveBg": { "$ref": "#/$defs/color" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "typography": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["product", "documentation", "mono", "scale"],
+          "properties": {
+            "product": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["family", "bodyWeight", "boldWeight", "lineHeight"],
+              "properties": {
+                "family": { "type": "string" },
+                "bodyWeight": { "type": "integer" },
+                "boldWeight": { "type": "integer" },
+                "lineHeight": { "type": "number" }
+              }
+            },
+            "documentation": { "type": "object" },
+            "mono": { "type": "object" },
+            "scale": { "type": "object" }
+          }
+        },
+        "spacing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["base", "scale"],
+          "properties": {
+            "base": { "type": "integer" },
+            "scale": { "type": "array", "items": { "type": "integer" } }
+          }
+        },
+        "radii": {
+          "type": "object",
+          "required": ["button", "input", "badge", "card"],
+          "additionalProperties": { "type": "integer" }
+        },
+        "borders": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["defaultWidth", "focusRingWidth", "componentBorders"],
+          "properties": {
+            "defaultWidth": { "type": "integer" },
+            "focusRingWidth": { "type": "integer" },
+            "componentBorders": { "type": "object" }
+          }
+        },
+        "shadows": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/shadow" }
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hover", "base", "modal", "allowed", "disallowed"],
+          "properties": {
+            "hover": { "type": "string" },
+            "base": { "type": "string" },
+            "modal": { "type": "string" },
+            "allowed": { "type": "array", "items": { "type": "string" } },
+            "disallowed": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "components": { "type": "object" }
+      }
+    },
+    "semanticColor": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["bg", "fg", "border"],
+      "properties": {
+        "bg": { "$ref": "#/$defs/color" },
+        "fg": { "$ref": "#/$defs/color" },
+        "border": { "$ref": "#/$defs/color" }
+      }
+    },
+    "legacyTheme": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "name", "description", "typography", "colors", "components"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "typography": { "type": "object" },
+        "colors": { "type": "object" },
+        "components": {
+          "type": "object",
+          "required": ["boxBorders", "labelBorders", "buttonBorders"],
+          "properties": {
+            "boxBorders": { "$ref": "#/$defs/borderScale" },
+            "labelBorders": { "$ref": "#/$defs/borderScale" },
+            "buttonBorders": { "$ref": "#/$defs/borderScale" }
+          }
+        }
+      }
+    }
+  }
+}
