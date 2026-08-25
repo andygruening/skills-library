@@ -1,0 +1,4 @@
+interface:
+  display_name: "Decompose Spec"
+  short_description: "Plan domain tasks for new or existing specs"
+  default_prompt: "Use $decompose-spec to turn this ADR or product spec into domain interface updates and implementation tasks."
