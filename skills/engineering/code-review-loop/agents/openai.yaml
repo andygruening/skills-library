@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Review Loop"
+  short_description: "Iterative code review to convergence"
+  default_prompt: "Use $code-review-loop to continuously review the current branch and write a prioritized Markdown report."
