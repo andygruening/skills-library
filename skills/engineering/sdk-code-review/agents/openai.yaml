@@ -1,0 +1,4 @@
+interface:
+  display_name: "SDK Code Review"
+  short_description: "Review SDK PRs, source, and parity"
+  default_prompt: "Use $sdk-code-review to review the current SDK changes, source, or parity against a peer SDK."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Architect"
+  short_description: "Build design-system-styled iOS, Android, and web apps"
+  default_prompt: "Use $design-architect to create or apply design-system components for iOS, Android, and React TypeScript web."

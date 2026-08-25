@@ -1,0 +1,87 @@
+import {
+  createContext,
+  type CSSProperties,
+  type ReactNode,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import * as dark from "./dark.gen";
+import * as light from "./light.gen";
+import * as oms from "./oms.gen";
+
+export const themes = {
+  light,
+  dark,
+  oms,
+} as const;
+
+export type ThemeId = keyof typeof themes;
+export type ThemeModule = (typeof themes)[ThemeId];
+
+type ThemeContextValue = {
+  themeId: ThemeId;
+  theme: ThemeModule;
+  setThemeId: (themeId: ThemeId) => void;
+  themeOptions: Array<{
+    id: ThemeId;
+    name: string;
+    description: string;
+  }>;
+  cssVariables: CSSProperties;
+};
+
+const ThemeContext = createContext<ThemeContextValue | null>(null);
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [themeId, setThemeId] = useState<ThemeId>("light");
+  const theme = themes[themeId];
+
+  const themeOptions = useMemo(
+    () =>
+      (Object.keys(themes) as ThemeId[]).map((id) => ({
+        id,
+        name: themes[id].designTheme.name,
+        description: themes[id].designTheme.description,
+      })),
+    [],
+  );
+
+  const cssVariables = useMemo(
+    () =>
+      ({
+        "--page": theme.designTokens.colors.page,
+        "--surface": theme.designTokens.colors.surface,
+        "--secondary-surface": theme.designTokens.colors.secondarySurface,
+        "--header": theme.designTokens.colors.header,
+        "--header-border": theme.designTokens.colors.headerBorder,
+        "--footer": theme.designTokens.colors.footer,
+        "--primary-text": theme.designTokens.colors.primaryText,
+        "--secondary-text": theme.designTokens.colors.secondaryText,
+        "--placeholder-text": theme.designTokens.colors.placeholderText,
+        "--border": theme.designTokens.colors.border,
+        "--focus-ring": theme.designTokens.colors.focusRing,
+        "--brand": theme.designTokens.colors.brand,
+        "--hover": theme.designTokens.colors.hover,
+        "--font-family": theme.designTokens.typography.fontFamily,
+        "--motion-hover": theme.designTokens.motion.hover,
+      }) as CSSProperties,
+    [theme],
+  );
+
+  return (
+    <ThemeContext.Provider
+      value={{ themeId, theme, setThemeId, themeOptions, cssVariables }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useTheme() {
+  const value = useContext(ThemeContext);
+  if (!value) {
+    throw new Error("useTheme must be used within ThemeProvider");
+  }
+  return value;
+}

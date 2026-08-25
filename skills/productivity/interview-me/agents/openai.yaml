@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interview Me"
+  short_description: "Adaptive interviews with escalating difficulty"
+  default_prompt: "Use $interview-me to interview me on a topic, escalate difficulty, and evaluate my performance."

@@ -1,0 +1,221 @@
+{
+  "$schema": "../theme.schema.json",
+  "id": "oms",
+  "name": "OMS",
+  "description": "Light financial product theme for OMS dashboards.",
+  "colors": {
+    "brand": {
+      "default": "#670DE5",
+      "hover": "#500AB2",
+      "ring": "#B78EEF",
+      "surface": "#F6F3FB",
+      "border": "#D5C4F2"
+    },
+    "background": {
+      "page": "#FFFFFF",
+      "canvas": "#F6F6FC",
+      "surface": "#FFFFFF",
+      "surfaceHover": "#F6F6FC",
+      "surfaceSelected": "#EAE4F5",
+      "surfaceInverse": "#141635",
+      "search": "#F6F6FC",
+      "searchActive": "#EEF0F9",
+      "searchSelected": "#D5C4F2"
+    },
+    "foreground": {
+      "primary": "#141635",
+      "secondary": "#64708F",
+      "tertiary": "#929EBA",
+      "disabled": "#C8CFE1",
+      "inverse": "#FFFFFF",
+      "link": "#670DE5",
+      "linkHover": "#500AB2"
+    },
+    "border": {
+      "default": "#C8CFE1",
+      "subtle": "#DFE3F0",
+      "hover": "#929EBA",
+      "strongHover": "#090624",
+      "focus": "#B78EEF",
+      "divider": "rgba(0,0,0,0.05)"
+    },
+    "button": {
+      "primaryBg": "#090624",
+      "primaryText": "#FFFFFF",
+      "primaryHoverBg": "#222744",
+      "primaryActiveBg": "#400A8E",
+      "secondaryBg": "#FFFFFF",
+      "secondaryText": "#090624",
+      "secondaryBorder": "#64708F",
+      "secondaryHoverBorder": "#090624",
+      "secondaryActiveBg": "#EAE4F5",
+      "secondaryActiveBorder": "#D5C4F2",
+      "disabledBg": "#C8CFE1",
+      "disabledText": "#929EBA"
+    },
+    "semantic": {
+      "info": {
+        "bg": "#F6F3FB",
+        "fg": "#500AB2",
+        "border": "#D5C4F2"
+      },
+      "success": {
+        "bg": "#ECFDF5",
+        "fg": "#047857",
+        "border": "#A7F3D0"
+      },
+      "warning": {
+        "bg": "#FFF7ED",
+        "fg": "#B45309",
+        "border": "#FED7AA"
+      },
+      "danger": {
+        "bg": "#FEF2F2",
+        "fg": "#B91C1C",
+        "border": "#FECACA",
+        "buttonBg": "#DC2626",
+        "buttonHoverBg": "#EF4444",
+        "buttonActiveBg": "#991B1B"
+      }
+    }
+  },
+  "typography": {
+    "product": {
+      "family": "Fustat",
+      "bodyWeight": 500,
+      "boldWeight": 700,
+      "lineHeight": 1.2
+    },
+    "documentation": {
+      "family": "Inter"
+    },
+    "mono": {
+      "family": "Geist"
+    },
+    "scale": {
+      "h1": { "size": 48, "weight": 700 },
+      "h2": { "size": 40, "weight": 700 },
+      "h3": { "size": 32, "weight": 700 },
+      "h4": { "size": 28, "weight": 700 },
+      "h5": { "size": 24, "weight": 700 },
+      "body1": { "size": 20, "weight": 500 },
+      "body2": { "size": 18, "weight": 500 },
+      "body3": { "size": 16, "weight": 500 },
+      "body4": { "size": 14, "weight": 500 },
+      "body5": { "size": 12, "weight": 500 }
+    }
+  },
+  "spacing": {
+    "base": 4,
+    "scale": [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128]
+  },
+  "radii": {
+    "xs": 4,
+    "sm": 6,
+    "md": 8,
+    "lg": 12,
+    "xl": 16,
+    "2xl": 24,
+    "pill": 999,
+    "button": 12,
+    "input": 12,
+    "badge": 999,
+    "card": 24,
+    "modal": 24,
+    "popover": 24,
+    "menu": 16
+  },
+  "borders": {
+    "defaultWidth": 1,
+    "focusRingWidth": 2,
+    "componentBorders": {
+      "card": "1px solid border.subtle",
+      "input": "1px solid border.default",
+      "buttonSecondary": "1px solid button.secondaryBorder",
+      "tableRow": "1px solid border.subtle"
+    }
+  },
+  "shadows": {
+    "card": "none",
+    "button": "0 1px 2px 0 rgba(0,0,0,0.05)",
+    "popover": "0 4px 6px -4px rgba(0,0,0,0.10), 0 10px 15px -3px rgba(0,0,0,0.10)",
+    "modal": "0 4px 6px -4px rgba(0,0,0,0.10), 0 10px 15px -3px rgba(0,0,0,0.10)",
+    "drawer": "0 4px 6px -4px rgba(0,0,0,0.10), 0 10px 15px -3px rgba(0,0,0,0.10)"
+  },
+  "motion": {
+    "hover": "120ms ease-out",
+    "base": "200ms ease-out",
+    "modal": "320ms ease-out",
+    "allowed": ["fade", "slide"],
+    "disallowed": ["bounce", "spring", "parallax", "scale-shrink"]
+  },
+  "components": {
+    "button": {
+      "sizes": {
+        "lg": { "height": 40, "paddingX": 12, "fontSize": 16 },
+        "md": { "height": 32, "paddingX": 12, "fontSize": 14 },
+        "sm": { "height": 30, "paddingX": 8, "fontSize": 12 }
+      },
+      "variants": ["primary", "secondary", "dangerPrimary", "dangerSecondary"],
+      "states": ["default", "hover", "active", "focusVisible", "disabled"]
+    },
+    "input": {
+      "height": 40,
+      "activeHeight": 44,
+      "radius": 12,
+      "paddingX": 12,
+      "labelRequired": true,
+      "helperTextRequired": true,
+      "states": ["default", "active", "filled", "focusFilled", "disabled", "destructive"]
+    },
+    "badge": {
+      "paddingY": 3,
+      "paddingX": 10,
+      "radius": 999,
+      "fontSize": 12,
+      "fontWeight": 500,
+      "tableDotRequired": true
+    },
+    "card": {
+      "surface": "background.surface",
+      "border": "border.subtle",
+      "radius": 24,
+      "shadow": "none",
+      "padding": [16, 20, 24]
+    },
+    "table": {
+      "headerBg": "background.canvas",
+      "headerFont": "documentation",
+      "headerSize": 11,
+      "cellPaddingY": 12,
+      "cellPaddingX": 18,
+      "rowHoverBg": "background.canvas",
+      "monoColumns": ["addresses", "timestamps", "ids"]
+    },
+    "appShell": {
+      "sidebarWidth": 240,
+      "topNavHeight": 64,
+      "sidebarBg": "background.surface",
+      "mainBg": "background.canvas",
+      "activeNavBg": "brand.surface",
+      "activeNavText": "brand.hover"
+    },
+    "modal": {
+      "desktopWidth": 400,
+      "radius": 24,
+      "mobilePresentation": "bottom-sheet"
+    },
+    "drawer": {
+      "anchor": "right",
+      "height": "full",
+      "motion": "slide"
+    },
+    "toast": {
+      "placement": "bottom-right",
+      "radius": 24,
+      "shadow": "popover",
+      "paddingY": 16,
+      "paddingX": 20
+    }
+  }
+}
