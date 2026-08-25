@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrate Spec Fleet"
+  short_description: "Coordinate spec task agents into PRs"
+  default_prompt: "Use $orchestrate-spec-fleet to run agents for each 0001 spec task and prepare pull requests."

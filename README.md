@@ -8,8 +8,10 @@ Reusable agent skills organized by category.
 
 | Skill | Path | Summary |
 | --- | --- | --- |
+| `code-review-loop` | `skills/engineering/code-review-loop` | Runs iterative code reviews over a repository, branch, PR, or working tree until findings converge, then writes prioritized findings into a Markdown report. |
 | `decompose-spec` | `skills/engineering/decompose-spec` | Splits a product spec, RFC, ADR, or technical design into domain-owned implementation tasks with explicit public interfaces, dependency ordering, contract tests, and integration prompts. |
 | `design-architect` | `skills/engineering/design-architect` | Generates and applies design-system UI components, tokens, wrappers, variants, and layouts for iOS SwiftUI, Android Jetpack Compose/Kotlin, and React TypeScript web apps. |
+| `orchestrate-spec-fleet` | `skills/engineering/orchestrate-spec-fleet` | Coordinates Codex agents across decomposed spec tasks in dependency order, producing one branch and manually reviewed pull request per task. |
 | `sdk-code-review` | `skills/engineering/sdk-code-review` | Reviews OMS Wallet SDK code, PRs, local changes, full source trees, and parity against peer SDKs across API design, errors, security, tests, docs, and compatibility. |
 
 ### Productivity
@@ -65,7 +67,7 @@ npx skills update design-architect --global -y
 Update multiple named skills at once:
 
 ```sh
-npx skills update decompose-spec design-architect sdk-code-review interview-me --project -y
+npx skills update code-review-loop decompose-spec design-architect orchestrate-spec-fleet sdk-code-review interview-me --project -y
 ```
 
 Update all installed project skills:
