@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff to GitHub"
+  short_description: "Create GitHub issues and project tickets from tasks"
+  default_prompt: "Use $handoff-to-github to create GitHub issues and add them to a project from this task document."
