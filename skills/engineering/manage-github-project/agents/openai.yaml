@@ -1,4 +1,4 @@
 interface:
   display_name: "Manage GitHub Project"
-  short_description: "Triage GitHub Project items with gh"
-  default_prompt: "Use $manage-github-project to triage my GitHub Project board and prepare ready tickets for integration."
+  short_description: "Triage GitHub Projects and dispatch ready work"
+  default_prompt: "Use $manage-github-project to triage my GitHub Project board and dispatch integration subagents for Ready/Sprint tickets."

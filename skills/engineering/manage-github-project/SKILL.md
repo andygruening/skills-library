@@ -1,6 +1,6 @@
 ---
 name: manage-github-project
-description: Manage GitHub Projects boards with GitHub CLI for repository-scoped issue workflows. Use when Codex needs to scan GitHub Project items by stage/status, list Ready/Sprint tickets for integration, move project items between In Progress/Blocked/In Review/Finished-like stages, inspect Blocked tickets for non-repeated proposed solutions, process issue comments without thumbs-up reactions, or keep GitHub issues and Project statuses synchronized.
+description: Manage GitHub Projects boards with GitHub CLI for repository-scoped issue workflows. Use when Codex needs to scan GitHub Project items by stage/status, dispatch integration subagents for Ready/Sprint tickets, move project items between In Progress/Blocked/In Review/Finished-like stages, inspect Blocked tickets for non-repeated proposed solutions, process issue comments without thumbs-up reactions, or keep GitHub issues and Project statuses synchronized.
 ---
 
 # Manage GitHub Project
@@ -32,7 +32,7 @@ python3 <skill-dir>/scripts/manage_github_project.py scan \
 
 2. Review the script output:
 
-- `ready_items`: tickets whose project stage is closest to Ready/Sprint. The script does not start agents. The harness or current Codex session should start integration agents from this queue.
+- `ready_items`: tickets whose project stage is closest to Ready/Sprint. The script does not start agents. The current Codex session or harness must dispatch integration subagents from this queue unless the user explicitly asks only to inspect or report.
 - `blocked_items`: tickets whose project stage is closest to Blocked. Read their issue body and comments; add a new proposed fix only when it adds meaningfully new information.
 - `comments_needing_attention`: comments on non-Ready/Sprint items that have no thumbs-up reaction. Decide whether to update the issue description/title, answer with a comment, or take another non-integration action.
 
@@ -52,6 +52,8 @@ Prefer an existing single-select field named like `Status`, `Stage`, `State`, `W
 
 ## Ready/Sprint Integration Queue
 
+Ready/Sprint means "start implementation work." Do not stop after reporting Ready/Sprint tickets when the user asked to go through or process the project board. After scan output includes one or more `ready_items`, dispatch a separate integration subagent for each ready item that can be worked independently. If the current environment cannot spawn subagents, perform the integration in the current session or clearly report the missing dispatch capability.
+
 For each `ready_items` entry:
 
 1. Read the issue title, body, and relevant comments from the scan output or with `issue`:
@@ -62,7 +64,7 @@ python3 <skill-dir>/scripts/manage_github_project.py issue \
   --issue ISSUE_NUMBER
 ```
 
-2. When the harness starts an integration agent, immediately mark the item In Progress:
+2. Immediately mark the item In Progress before or as the integration subagent starts:
 
 ```bash
 python3 <skill-dir>/scripts/manage_github_project.py mark-stage \
@@ -73,7 +75,16 @@ python3 <skill-dir>/scripts/manage_github_project.py mark-stage \
   --apply
 ```
 
-3. The integrating agent must create a PR when done and link the project item/ticket in the PR body:
+3. Start the integration subagent with a prompt that includes the ticket URL, title, body, relevant comments, repository, and these requirements:
+
+```text
+Implement GitHub issue ISSUE_URL in OWNER/REPO.
+Use the issue title, body, and relevant comments as the source of truth.
+Make the smallest safe change, run the appropriate verification, commit the work, create a PR, and include ISSUE_URL in the PR description.
+If blocked, do not make speculative changes; explain the blocker and the most useful next step.
+```
+
+4. The integrating agent must create a PR when done and link the project item/ticket in the PR body:
 
 ```bash
 gh pr create \
@@ -82,7 +93,9 @@ gh pr create \
   --body "Implements https://github.com/OWNER/REPO/issues/ISSUE_NUMBER"
 ```
 
-4. When the PR is created, mark the item In Review. If the agent is blocked, add a clear issue comment explaining the blocker and proposed next step, then mark the item Blocked.
+5. When the PR is created, mark the item In Review. If the agent is blocked, add a clear issue comment explaining the blocker and proposed next step, then mark the item Blocked.
+
+6. Do not treat a project-board scan as complete while unstarted Ready/Sprint items remain and dispatch is available.
 
 ## Blocked Items
 
