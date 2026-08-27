@@ -10,6 +10,7 @@ Reusable agent skills organized by category.
 | --- | --- | --- |
 | `decompose-spec` | `skills/engineering/decompose-spec` | Splits a product spec, RFC, ADR, or technical design into domain-owned implementation tasks with explicit public interfaces, dependency ordering, contract tests, and integration prompts. |
 | `design-architect` | `skills/engineering/design-architect` | Generates and applies design-system UI components, tokens, wrappers, variants, and layouts for iOS SwiftUI, Android Jetpack Compose/Kotlin, and React TypeScript web apps. |
+| `handoff-to-github` | `skills/engineering/handoff-to-github` | Creates GitHub issue handoffs from Markdown task documents, uploads task and ADR/spec files to Gists, and adds each issue to a verified GitHub Project. |
 | `sdk-code-review` | `skills/engineering/sdk-code-review` | Reviews OMS Wallet SDK code, PRs, local changes, full source trees, and parity against peer SDKs across API design, errors, security, tests, docs, and compatibility. |
 
 ### Productivity
@@ -65,7 +66,7 @@ npx skills update design-architect --global -y
 Update multiple named skills at once:
 
 ```sh
-npx skills update decompose-spec design-architect sdk-code-review interview-me --project -y
+npx skills update decompose-spec design-architect handoff-to-github sdk-code-review interview-me --project -y
 ```
 
 Update all installed project skills:
