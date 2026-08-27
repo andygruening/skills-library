@@ -11,7 +11,7 @@ Use these templates when generating Codex task prompts, issue bodies, or impleme
 Read the ADR/spec and project structure, then define or update the public interfaces for each affected domain so implementation tasks can proceed independently.
 
 ## Inputs
-- Source artifact: <path or pasted title>
+- Source artifact: <explicit path, pasted title, or prioritized SPEC.md path>
 - Relevant decisions: <brief bullets>
 - Existing architecture/code references: <paths or discovery instructions>
 - Existing domain registry or domain layout: <path, if present>

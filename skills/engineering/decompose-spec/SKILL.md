@@ -1,6 +1,6 @@
 ---
 name: decompose-spec
-description: Split a software product spec, technical design, RFC, or ADR into domain-owned implementation tasks with explicit public interfaces, dependency order, contract tests, and integration prompts for new or existing projects. Use when Codex needs to decompose architecture work across bounded contexts/modules/services, create parallel task prompts, design or update domain contracts, reuse an existing domain structure for a new ADR/spec, prevent cross-domain coupling, or coordinate one interface-composition task followed by per-domain integration tasks.
+description: Split a software product spec, technical design, RFC, or ADR into domain-owned implementation tasks written to TASKS.md, prioritizing SPEC.md as the source artifact when present, with explicit public interfaces, dependency order, contract tests, and integration prompts for new or existing projects. Use when Codex needs to decompose architecture work across bounded contexts/modules/services, create parallel task prompts, design or update domain contracts, reuse an existing domain structure for a new ADR/spec, prevent cross-domain coupling, or coordinate one interface-composition task followed by per-domain integration tasks.
 ---
 
 # Decompose Spec
@@ -8,6 +8,14 @@ description: Split a software product spec, technical design, RFC, or ADR into d
 ## Overview
 
 Turn a product spec, technical design, RFC, or ADR into a domain task plan. First define or update each domain's public interface, then create separate integration tasks so each domain can implement internally while other domains consume only that interface. Use the skill both to design domains for a new project and to plan changes against an existing domain structure.
+
+## File Conventions
+
+- Treat an explicitly supplied source path, linked artifact, or pasted source content as authoritative. Otherwise, look first for a project file named exactly `SPEC.md` before considering other spec, ADR, RFC, README, issue, or design files.
+- When multiple files named exactly `SPEC.md` exist, prefer the one nearest the target project root or the current working directory, and state which file was used.
+- When writing the generated Markdown plan or manifest to disk, write it to a file named exactly `TASKS.md`. Do not use alternate filenames such as `tasks.md`, `TASK_PLAN.md`, or `domain-tasks.md`.
+- If `SPEC.md` is the selected source artifact, write `TASKS.md` in the same directory unless the user specifies another target directory.
+- If `TASKS.md` already exists, update that file instead of creating a second task-plan file. Preserve unrelated user-authored content when practical; if the existing file cannot be updated safely, report the conflict instead of writing an alternate filename.
 
 ## Core Rules
 
@@ -74,6 +82,7 @@ Use existing-project mode when domains, ports, package boundaries, modules, serv
 ## Workflow
 
 1. Read the source artifact and local project context.
+   - If the user did not provide a source artifact, prioritize a file named exactly `SPEC.md` and use it as the source before other candidate spec or architecture files.
    - Identify the decision, goals, non-goals, constraints, rollout assumptions, and affected user or system flows.
    - Inspect existing architecture docs, interface registries, code boundaries, and composition roots when a repo is available.
    - Use the project's existing task, issue, or thread conventions when present.
@@ -110,14 +119,15 @@ Use existing-project mode when domains, ports, package boundaries, modules, serv
    - Add separate interface-update tasks when integration work reveals a cross-domain contract gap. Assign them to the provider domain owner or the interface-composition owner, then unblock consumers through the updated registry.
 
 6. Deliver or create tasks.
+   - Unless the user requests chat-only output or task/thread creation, write the single Markdown plan document to `TASKS.md` exactly.
    - If the user asks for task prompts only, output copy-ready task bodies.
    - If the user explicitly asks to create Codex tasks/threads and the environment exposes thread tools, create the interface-composition task first. Wait for or inspect its interface registry before creating domain integration tasks unless the user explicitly wants draft tasks based only on the original ADR/spec.
    - After the registry exists, create one task per domain integration and optionally one final convergence task. Follow the app's thread-tool instructions.
-   - If no task system is available, provide issue-ready Markdown instead.
+   - If no task system is available, write issue-ready Markdown to `TASKS.md` when a writable project directory is available; otherwise provide it in chat and state that `TASKS.md` could not be written.
 
 ## Required Output Shape
 
-Produce these sections unless the user requests a different format:
+Produce these sections unless the user requests a different format. When writing to disk, these sections belong in `TASKS.md`:
 
 - `Domain Map`: table with domain, ownership rationale, likely code locations, owned data/behavior, and external dependencies.
 - `Existing Project Delta`: when a project already has domains, summarize reused domains, new domains, changed interfaces, unchanged interfaces, touched tests/stubs/fixtures, and composition-root changes.
@@ -166,5 +176,7 @@ Before finishing, verify:
 - Existing-project tasks are deltas against current public interfaces, tests, fixtures, stubs, assembly, internals, and enforcement rules.
 - Every provider interface has tests or fixtures that consumers can use.
 - The interface-composition task creates enough artifacts for parallel work.
+- `SPEC.md` was prioritized as the source artifact when the user did not explicitly supply a different source.
+- The generated file is named exactly `TASKS.md` whenever output is written to disk.
 - Integration tasks are scoped so independent agents can execute them without hidden context.
 - Open questions are separated from decided contract details.
