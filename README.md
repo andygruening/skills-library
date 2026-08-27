@@ -8,7 +8,7 @@ Reusable agent skills organized by category.
 
 | Skill | Path | Summary |
 | --- | --- | --- |
-| `decompose-spec` | `skills/engineering/decompose-spec` | Splits a product spec, RFC, ADR, or technical design into domain-owned implementation tasks with explicit public interfaces, dependency ordering, contract tests, and integration prompts. |
+| `decompose-spec` | `skills/engineering/decompose-spec` | Splits `SPEC.md` or another supplied spec/RFC/ADR into domain-owned implementation tasks written to `TASKS.md`, with explicit public interfaces, dependency ordering, contract tests, and integration prompts. |
 | `design-architect` | `skills/engineering/design-architect` | Generates and applies design-system UI components, tokens, wrappers, variants, and layouts for iOS SwiftUI, Android Jetpack Compose/Kotlin, and React TypeScript web apps. |
 | `sdk-code-review` | `skills/engineering/sdk-code-review` | Reviews OMS Wallet SDK code, PRs, local changes, full source trees, and parity against peer SDKs across API design, errors, security, tests, docs, and compatibility. |
 

@@ -1,6 +1,6 @@
 # Decompose Spec
 
-`decompose-spec` is a Codex skill for turning a product spec, technical design, RFC, or ADR into domain-owned implementation tasks.
+`decompose-spec` is a Codex skill for turning a product spec, technical design, RFC, or ADR into domain-owned implementation tasks. When no source artifact is supplied, it prioritizes a file named exactly `SPEC.md`; when it writes the generated plan to disk, the output file is named exactly `TASKS.md`.
 
 The operational agent instructions live in `SKILL.md`. This README is human-facing: it explains the concepts, rules, and design decisions so the skill is easier to share and discuss.
 
@@ -14,6 +14,7 @@ This makes it easier to split a large software change across multiple agents or 
 
 Given a spec or ADR, the skill produces:
 
+- A `TASKS.md` plan document
 - A domain map
 - A public interface registry
 - A dependency graph
@@ -23,6 +24,12 @@ Given a spec or ADR, the skill produces:
 - Architecture enforcement rules where the project supports them
 
 The goal is not just to split work into smaller tickets. The goal is to split work along ownership boundaries so parallel agents can work safely.
+
+## File Conventions
+
+Explicitly supplied source paths, linked artifacts, or pasted source content are authoritative. Otherwise, the skill looks first for a file named exactly `SPEC.md` before considering other specs, ADRs, RFCs, issues, READMEs, or design documents.
+
+When the skill writes its Markdown output to disk, it writes or updates `TASKS.md`. If the selected source is `SPEC.md`, the output should live beside that file unless the user asks for a different target directory.
 
 ## New Projects And Existing Projects
 
