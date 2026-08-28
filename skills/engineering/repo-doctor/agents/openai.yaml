@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo Doctor"
+  short_description: "Make repositories agent-ready and PR-safe"
+  default_prompt: "Use $repo-doctor to audit this repository for agent readiness, CI, tests, and branch protection gaps."

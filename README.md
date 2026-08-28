@@ -12,6 +12,7 @@ Reusable agent skills organized by category.
 | `design-architect` | `skills/engineering/design-architect` | Generates and applies design-system UI components, tokens, wrappers, variants, and layouts for iOS SwiftUI, Android Jetpack Compose/Kotlin, and React TypeScript web apps. |
 | `handoff-to-github` | `skills/engineering/handoff-to-github` | Creates GitHub issue handoffs from Markdown task documents, uploads task and ADR/spec files to Gists, and adds each issue to a verified GitHub Project. |
 | `manage-github-project` | `skills/engineering/manage-github-project` | Manages repository-scoped GitHub Project boards with `gh`, including stage scans, Ready/Sprint integration subagent dispatch, status moves, comments, reactions, and issue edits. |
+| `repo-doctor` | `skills/engineering/repo-doctor` | Audits and prepares repositories for agent-ready work, covering project instructions, setup and test commands, CI workflows, PR enforcement, branch protection, and repository hygiene. |
 | `sdk-code-review` | `skills/engineering/sdk-code-review` | Reviews OMS Wallet SDK code, PRs, local changes, full source trees, and parity against peer SDKs across API design, errors, security, tests, docs, and compatibility. |
 
 ### Productivity
@@ -67,7 +68,7 @@ npx skills update design-architect --global -y
 Update multiple named skills at once:
 
 ```sh
-npx skills update decompose-spec design-architect handoff-to-github manage-github-project sdk-code-review interview-me --project -y
+npx skills update decompose-spec design-architect handoff-to-github manage-github-project repo-doctor sdk-code-review interview-me --project -y
 ```
 
 Update all installed project skills:
