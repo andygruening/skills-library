@@ -151,8 +151,8 @@ def is_task_heading(
     headings: list[Heading],
     custom_heading_regex: re.Pattern[str] | None,
 ) -> bool:
-    if custom_heading_regex and custom_heading_regex.search(heading.title):
-        return True
+    if custom_heading_regex:
+        return bool(custom_heading_regex.search(heading.title))
     if heading.title.casefold() in TASK_CONTAINER_TITLES:
         return False
     if TASK_HEADING_RE.search(heading.title):
@@ -174,9 +174,26 @@ def parse_heading_tasks(
     tasks: list[Task] = []
     seen_ranges: set[tuple[int, int]] = set()
 
-    for heading in headings:
-        if not is_task_heading(heading, headings, custom_heading_regex):
+    candidate_indexes = {
+        index
+        for index, heading in enumerate(headings)
+        if is_task_heading(heading, headings, custom_heading_regex)
+    }
+
+    for index, heading in enumerate(headings):
+        if index not in candidate_indexes:
             continue
+
+        # A task's subsections belong in that issue body; only the outermost
+        # matching heading should create an issue.
+        parent_index = heading.parent_index
+        while parent_index is not None:
+            if parent_index in candidate_indexes:
+                break
+            parent_index = headings[parent_index].parent_index
+        if parent_index is not None:
+            continue
+
         section_range = (heading.start, heading.end)
         if section_range in seen_ranges:
             continue
