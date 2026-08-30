@@ -61,6 +61,21 @@ class ParseHeadingTasksTest(unittest.TestCase):
 
         self.assertEqual(self.parse(markdown), [])
 
+    def test_ignores_bare_punctuated_task_heading(self) -> None:
+        markdown = "## Task: Build export flow\n\nWire the endpoint."
+
+        self.assertEqual(self.parse(markdown), [])
+
+    def test_ignores_bare_punctuated_issue_heading(self) -> None:
+        markdown = "## Issue: Build export flow\n\nWire the endpoint."
+
+        self.assertEqual(self.parse(markdown), [])
+
+    def test_ignores_bare_punctuated_ticket_heading(self) -> None:
+        markdown = "## Ticket: Build export flow\n\nWire the endpoint."
+
+        self.assertEqual(self.parse(markdown), [])
+
     def test_parses_explicit_task_heading(self) -> None:
         tasks = self.parse("## Task 1: Build export flow\n\nWire the endpoint.")
 

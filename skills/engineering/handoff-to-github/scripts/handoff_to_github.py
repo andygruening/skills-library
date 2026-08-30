@@ -29,7 +29,7 @@ TASK_NUMERIC_ID_PATTERN = r"#?\d+"
 TASK_HEADING_RE = re.compile(
     r"^(?:"
     r"\d+[\.)]\s+\S"
-    rf"|{TASK_WORD_PATTERN}(?:\s+{TASK_NUMERIC_ID_PATTERN})?\s*[:.)-]\s+\S"
+    rf"|{TASK_WORD_PATTERN}\s+{TASK_NUMERIC_ID_PATTERN}\s*[:.)-]\s+\S"
     rf"|{TASK_WORD_PATTERN}\s+{TASK_NUMERIC_ID_PATTERN}\s*$"
     r")",
     re.IGNORECASE,
