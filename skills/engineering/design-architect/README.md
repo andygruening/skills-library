@@ -123,7 +123,7 @@ python3 scripts/generate_components.py <project-root> --platform typescript --th
 
 ## Example app
 
-The `example/` directory contains a Vite React TypeScript app that showcases the current theme options. Generated files and dependencies are ignored by git.
+The `example/` directory contains a Vite React TypeScript app that showcases the current theme options. Generated theme modules are tracked so the example works immediately; dependencies and build output are ignored by git.
 
 The example imports generated TypeScript theme modules from `example/src/generated/themes/`. Refresh them with:
 

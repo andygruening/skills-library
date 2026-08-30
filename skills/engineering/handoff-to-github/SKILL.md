@@ -74,7 +74,8 @@ Prefer task files with one task per Markdown heading, especially under headings 
 
 The script also detects:
 
-- Headings beginning with `Task`, `Ticket`, or `Issue`.
+- Punctuated numeric task, ticket, or issue headings such as `### Task 1: Add billing adapter` or `### Issue #42: Fix export flow`.
+- Bare numeric task, ticket, or issue headings such as `### Task 1`.
 - Numbered task headings such as `### 1. Add billing adapter`.
 - GitHub checklist items as a fallback when no task headings are found.
 
