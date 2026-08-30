@@ -28,7 +28,14 @@ TASK_CONTAINER_TITLES = {
     "ticket bodies",
     "issues",
 }
-TASK_HEADING_RE = re.compile(r"^\s*(task|ticket|issue)\b|^\s*\d+[\.)]\s+", re.IGNORECASE)
+TASK_HEADING_RE = re.compile(
+    r"^(?:"
+    r"\d+[\.)]\s+\S"
+    r"|(?:task|ticket|issue)(?:\s+(?:#?\d+|[A-Z][A-Z0-9]+-\d+))?\s*[:.)-]\s+\S"
+    r"|(?:task|ticket|issue)\s+#?\d+\b"
+    r")",
+    re.IGNORECASE,
+)
 
 
 @dataclass
