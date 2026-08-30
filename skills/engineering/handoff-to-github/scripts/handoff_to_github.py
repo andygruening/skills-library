@@ -28,7 +28,7 @@ TASK_HEADING_RE = re.compile(
     r"^(?:"
     r"\d+[\.)]\s+\S"
     r"|(?:task|ticket|issue)(?:\s+(?:#?\d+|[A-Z][A-Z0-9]+-\d+))?\s*[:.)-]\s+\S"
-    r"|(?:task|ticket|issue)\s+#?\d+\b"
+    r"|(?:task|ticket|issue)\s+#?\d+\s*$"
     r")",
     re.IGNORECASE,
 )
