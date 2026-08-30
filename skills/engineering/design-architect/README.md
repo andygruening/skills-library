@@ -36,6 +36,7 @@ The selected theme JSON is the machine-readable source of truth for tokens. `the
 │   └── web.md
 ├── scripts/
 │   ├── generate_components.py
+│   ├── generate_example_designs.py
 │   ├── generate_example_themes.py
 │   ├── validate_themes.py
 │   └── list_theme_options.py
@@ -123,13 +124,27 @@ python3 scripts/generate_components.py <project-root> --platform typescript --th
 
 ## Example app
 
-The `example/` directory contains a Vite React TypeScript app that showcases the current theme options. Generated files and dependencies are ignored by git.
+The `example/` directory contains a Vite React TypeScript app that showcases the current theme options. Generated example metadata is checked in so the app can build without running generators first. Dependencies and build output are ignored by git.
 
 The example imports generated TypeScript theme modules from `example/src/generated/themes/`. Refresh them with:
 
 ```bash
 cd example
 npm run generate:themes
+```
+
+Refresh both generated theme modules and design metadata with:
+
+```bash
+cd example
+npm run generate
+```
+
+Check whether the generated example files are stale without rewriting them:
+
+```bash
+cd example
+npm run generate:check
 ```
 
 Run it locally only when dependencies are already installed:
