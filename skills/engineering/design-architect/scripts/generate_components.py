@@ -272,7 +272,7 @@ def rich_theme_tokens(data: dict[str, object]) -> ThemeTokens:
         selected_button_text=brand["hover"],
         danger=semantic["danger"]["buttonBg"],
         danger_soft=semantic["danger"]["bg"],
-        danger_text=foreground["inverse"],
+        danger_text=semantic["danger"]["fg"],
         success=semantic["success"]["fg"],
         success_soft=semantic["success"]["bg"],
         warning=semantic["warning"]["fg"],
@@ -1843,7 +1843,14 @@ def write_file(path: Path, content: str, check: bool) -> bool:
     return True
 
 
-def generate(project_root: Path, platform: str, theme_slug: str, package_name: str, check: bool) -> bool:
+def generate(
+    project_root: Path,
+    platform: str,
+    theme_slug: str,
+    package_name: str,
+    check: bool,
+    output: Path | None = None,
+) -> bool:
     tokens = read_theme(theme_slug)
     project_root = project_root.resolve()
 
@@ -1854,6 +1861,8 @@ def generate(project_root: Path, platform: str, theme_slug: str, package_name: s
     }
 
     path, content = outputs[platform]
+    if output is not None:
+        path = output if output.is_absolute() else project_root / output
     return write_file(path, content, check)
 
 
@@ -1881,10 +1890,22 @@ def main() -> int:
         action="store_true",
         help="Print diffs and fail if generated files are stale.",
     )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Optional generated-file path, relative to project root unless absolute.",
+    )
     args = parser.parse_args()
 
     try:
-        ok = generate(Path(args.project_root), args.platform, args.theme, args.kotlin_package, args.check)
+        ok = generate(
+            Path(args.project_root),
+            args.platform,
+            args.theme,
+            args.kotlin_package,
+            args.check,
+            args.output,
+        )
     except ValueError as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

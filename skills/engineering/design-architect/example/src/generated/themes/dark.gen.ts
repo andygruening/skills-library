@@ -30,7 +30,7 @@ export const designTokens = {
     selectedButtonText: "#F3F4F6",
     danger: "#DC2626",
     dangerSoft: "#450A0A",
-    dangerText: "#000000",
+    dangerText: "#FCA5A5",
     success: "#86EFAC",
     successSoft: "#052E16",
     warning: "#FDBA74",

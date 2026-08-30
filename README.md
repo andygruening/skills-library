@@ -9,8 +9,8 @@ Reusable agent skills organized by category.
 | Skill | Path | Summary |
 | --- | --- | --- |
 | `decompose-spec` | `skills/engineering/decompose-spec` | Splits `SPEC.md` or another supplied spec/RFC/ADR into domain-owned implementation tasks written to `TASKS.md`, with explicit public interfaces, dependency ordering, contract tests, and integration prompts. |
-| `design-architect` | `skills/engineering/design-architect` | Generates and applies design-system UI components, tokens, wrappers, variants, and layouts for iOS SwiftUI, Android Jetpack Compose/Kotlin, and React TypeScript web apps. |
-| `handoff-to-github` | `skills/engineering/handoff-to-github` | Creates GitHub issue handoffs from Markdown task documents, uploads task and ADR/spec files to Gists, and adds each issue to a verified GitHub Project. |
+| `design-architect` | `skills/engineering/design-architect` | Generates and applies schema-validated design-system components, tokens, wrappers, variants, and layouts for iOS SwiftUI, Android Jetpack Compose/Kotlin, and React TypeScript web apps. |
+| `handoff-to-github` | `skills/engineering/handoff-to-github` | Creates prevalidated, restartable GitHub issue handoffs from Markdown task documents, uploads task and ADR/spec files to Gists, and adds each issue to a verified GitHub Project. |
 | `repo-doctor` | `skills/engineering/repo-doctor` | Audits and prepares repositories for agent-ready work, covering project instructions, setup and test commands, CI workflows, PR enforcement, branch protection, and repository hygiene. |
 | `sdk-code-review` | `skills/engineering/sdk-code-review` | Reviews OMS Wallet SDK code, PRs, local changes, full source trees, and parity against peer SDKs across API design, errors, security, tests, docs, and compatibility. |
 
