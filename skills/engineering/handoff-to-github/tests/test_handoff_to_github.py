@@ -36,6 +36,16 @@ class ParseHeadingTasksTest(unittest.TestCase):
 
         self.assertEqual(self.parse(markdown), [])
 
+    def test_ignores_child_heading_under_non_task_container(self) -> None:
+        markdown = "# Non-tasks\n\n## Background\n\nThis is supporting context."
+
+        self.assertEqual(self.parse(markdown), [])
+
+    def test_ignores_child_heading_under_known_issues_section(self) -> None:
+        markdown = "# Known issues and risks\n\n## Mitigate outage\n\nOperational notes."
+
+        self.assertEqual(self.parse(markdown), [])
+
     def test_parses_explicit_task_heading(self) -> None:
         tasks = self.parse("## Task 1: Build export flow\n\nWire the endpoint.")
 

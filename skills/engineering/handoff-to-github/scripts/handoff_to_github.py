@@ -16,10 +16,6 @@ from pathlib import Path
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$", re.MULTILINE)
 CHECKBOX_RE = re.compile(r"^\s*[-*+]\s+\[[ xX]\]\s+(.+?)\s*$", re.MULTILINE)
 NUMBERED_RE = re.compile(r"^\s*\d+[\.)]\s+(.+?)\s*$", re.MULTILINE)
-TASK_CONTAINER_RE = re.compile(
-    r"\b(task bodies|tasks|implementation tasks|task graph|ticket bodies|issues)\b",
-    re.IGNORECASE,
-)
 TASK_CONTAINER_TITLES = {
     "task bodies",
     "tasks",
@@ -120,6 +116,11 @@ def issue_title(raw_title: str, max_length: int) -> str:
     return title
 
 
+def is_task_container_title(title: str) -> bool:
+    normalized = re.sub(r"\s+", " ", title).strip().casefold()
+    return normalized in TASK_CONTAINER_TITLES
+
+
 def build_headings(markdown: str) -> list[Heading]:
     matches = list(HEADING_RE.finditer(markdown))
     headings: list[Heading] = []
@@ -160,13 +161,13 @@ def is_task_heading(
 ) -> bool:
     if custom_heading_regex and custom_heading_regex.search(heading.title):
         return True
-    if heading.title.casefold() in TASK_CONTAINER_TITLES:
+    if is_task_container_title(heading.title):
         return False
     if TASK_HEADING_RE.search(heading.title):
         return True
     if heading.parent_index is not None:
         parent = headings[heading.parent_index]
-        if TASK_CONTAINER_RE.search(parent.title):
+        if is_task_container_title(parent.title):
             return True
     return False
 
