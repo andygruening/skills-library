@@ -134,6 +134,10 @@ def read_theme(slug: str) -> ThemeTokens:
     except json.JSONDecodeError as error:
         raise ValueError(f"{theme_path} is not valid JSON: {error}") from error
 
+    # Validate the root contract first, including its oneOf. The variant
+    # validator below then provides the richer, format-specific diagnostics.
+    validate_against_theme_schema(data, None, theme_path)
+
     if is_rich_theme_json(data):
         validate_rich_theme_json(data, theme_path, expected_slug=slug)
         return rich_theme_tokens(data)
@@ -461,12 +465,16 @@ def validate_rich_theme_json(data: object, path: Path, expected_slug: str | None
         raise ValueError(f"{path} borders.defaultWidth must be an integer.")
 
 
-def validate_against_theme_schema(data: object, definition: str, path: Path) -> None:
+def validate_against_theme_schema(data: object, definition: str | None, path: Path) -> None:
     """Validate a theme against its bundled JSON Schema without extra dependencies."""
     try:
         schema = json.loads(THEME_SCHEMA_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError(f"Could not load theme schema {THEME_SCHEMA_PATH}: {error}") from error
+
+    if definition is None:
+        validate_json_schema(data, schema, schema, "$", path)
+        return
 
     definitions = schema.get("$defs")
     if not isinstance(definitions, dict) or definition not in definitions:

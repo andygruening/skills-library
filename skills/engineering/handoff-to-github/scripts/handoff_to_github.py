@@ -184,15 +184,18 @@ def parse_heading_tasks(
         if index not in candidate_indexes:
             continue
 
-        # A task's subsections belong in that issue body; only the outermost
-        # matching heading should create an issue.
-        parent_index = heading.parent_index
-        while parent_index is not None:
-            if parent_index in candidate_indexes:
-                break
-            parent_index = headings[parent_index].parent_index
-        if parent_index is not None:
-            continue
+        if custom_heading_regex is None:
+            # A task's subsections belong in that issue body; only the outermost
+            # heuristic task heading should create an issue. An explicitly
+            # supplied regex, however, is an exact selection of the headings
+            # that should become issues, including nested headings.
+            parent_index = heading.parent_index
+            while parent_index is not None:
+                if parent_index in candidate_indexes:
+                    break
+                parent_index = headings[parent_index].parent_index
+            if parent_index is not None:
+                continue
 
         section_range = (heading.start, heading.end)
         if section_range in seen_ranges:
@@ -240,7 +243,7 @@ def parse_tasks(
         custom_heading_regex=custom_regex,
         max_title_length=max_title_length,
     )
-    if not tasks:
+    if not tasks and custom_regex is None:
         tasks = parse_list_tasks(markdown, max_title_length=max_title_length)
     if not tasks:
         raise HandoffError(
