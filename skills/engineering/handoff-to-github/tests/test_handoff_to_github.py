@@ -56,12 +56,24 @@ class ParseHeadingTasksTest(unittest.TestCase):
 
         self.assertEqual(self.parse(markdown), [])
 
+    def test_ignores_jira_style_ticket_heading(self) -> None:
+        markdown = "## Ticket ABC-123: Build export flow\n\nWire the endpoint."
+
+        self.assertEqual(self.parse(markdown), [])
+
     def test_parses_explicit_task_heading(self) -> None:
         tasks = self.parse("## Task 1: Build export flow\n\nWire the endpoint.")
 
         self.assertEqual(len(tasks), 1)
         self.assertEqual(tasks[0].title, "Build export flow")
         self.assertIn("Wire the endpoint.", tasks[0].body)
+
+    def test_parses_issue_number_heading_and_strips_prefix(self) -> None:
+        tasks = self.parse("## Issue #99: Build export flow\n\nWire the endpoint.")
+
+        self.assertEqual(len(tasks), 1)
+        self.assertEqual(tasks[0].title, "Build export flow")
+        self.assertIn("Issue #99: Build export flow", tasks[0].body)
 
     def test_parses_task_number_heading_without_title(self) -> None:
         tasks = self.parse("## Task 1\n\nWire the endpoint.")

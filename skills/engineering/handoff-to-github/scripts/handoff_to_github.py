@@ -24,12 +24,18 @@ TASK_CONTAINER_TITLES = {
     "ticket bodies",
     "issues",
 }
+TASK_WORD_PATTERN = r"(?:task|ticket|issue)"
+TASK_NUMERIC_ID_PATTERN = r"#?\d+"
 TASK_HEADING_RE = re.compile(
     r"^(?:"
     r"\d+[\.)]\s+\S"
-    r"|(?:task|ticket|issue)(?:\s+(?:#?\d+|[A-Z][A-Z0-9]+-\d+))?\s*[:.)-]\s+\S"
-    r"|(?:task|ticket|issue)\s+#?\d+\s*$"
+    rf"|{TASK_WORD_PATTERN}(?:\s+{TASK_NUMERIC_ID_PATTERN})?\s*[:.)-]\s+\S"
+    rf"|{TASK_WORD_PATTERN}\s+{TASK_NUMERIC_ID_PATTERN}\s*$"
     r")",
+    re.IGNORECASE,
+)
+TASK_TITLE_PREFIX_RE = re.compile(
+    rf"^{TASK_WORD_PATTERN}(?:\s+{TASK_NUMERIC_ID_PATTERN})?\s*[:.)-]\s*",
     re.IGNORECASE,
 )
 
@@ -108,7 +114,7 @@ def strip_markdown_title(value: str) -> str:
 
 def issue_title(raw_title: str, max_length: int) -> str:
     title = strip_markdown_title(raw_title)
-    title = re.sub(r"^(task|ticket|issue)\s*\d*\s*[:.)-]\s*", "", title, flags=re.IGNORECASE)
+    title = TASK_TITLE_PREFIX_RE.sub("", title)
     title = re.sub(r"^\d+[\.)]\s*", "", title)
     title = title.strip() or strip_markdown_title(raw_title) or "Untitled task"
     if len(title) > max_length:
