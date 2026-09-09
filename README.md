@@ -13,6 +13,7 @@ Reusable agent skills organized by category.
 | `handoff-to-github` | `skills/engineering/handoff-to-github` | Creates GitHub issue handoffs from Markdown task documents, uploads task and ADR/spec files to Gists, and adds each issue to a verified GitHub Project. |
 | `repo-doctor` | `skills/engineering/repo-doctor` | Audits and prepares repositories for agent-ready work, covering project instructions, setup and test commands, CI workflows, PR enforcement, branch protection, and repository hygiene. |
 | `sdk-code-review` | `skills/engineering/sdk-code-review` | Reviews OMS Wallet SDK code, PRs, local changes, full source trees, and parity against peer SDKs across API design, errors, security, tests, docs, and compatibility. |
+| `wiki-builder` | `skills/engineering/wiki-builder` | Analyzes an entire software repository, infers focused documentation domains from evidence, and generates a linked wiki with concrete code references and Mermaid code maps under `wiki/`. |
 
 ### Productivity
 
