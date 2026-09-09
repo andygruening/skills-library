@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wiki Builder"
+  short_description: "Build evidence-based project wiki documentation"
+  default_prompt: "Use $wiki-builder to analyze this repository and generate focused documentation under ./wiki/."
