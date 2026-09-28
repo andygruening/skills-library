@@ -39,7 +39,7 @@ python3 <skill-dir>/scripts/handoff_to_github.py path/to/tasks.md path/to/adr-or
 
 ## Script Behavior
 
-The script performs this sequence:
+Before any GitHub mutation, the script parses the task file and verifies requested project fields, their types, and the requested Status option. It then performs this sequence:
 
 1. Upload the task Markdown file to a GitHub Gist.
 2. Upload the ADR/spec Markdown file to a separate GitHub Gist.
@@ -49,6 +49,8 @@ The script performs this sequence:
    - Include both Gist URLs in the issue body.
    - Add the issue URL to the verified GitHub Project.
    - Edit project item fields when matching fields are available.
+
+The script records completed Gists, issues, project additions, and field updates in a local state file (by default beside the task file). Re-run the same command after a failure to resume it. Each issue body also contains a stable hidden marker, so a retry can find an already-created issue even if interruption happened before the state file was updated.
 
 The core `gh` calls are inside `scripts/handoff_to_github.py`:
 

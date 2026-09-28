@@ -242,6 +242,11 @@
         "description": { "type": "string" },
         "typography": { "type": "object" },
         "colors": { "type": "object" },
+        "spacing": false,
+        "radii": false,
+        "borders": false,
+        "shadows": false,
+        "motion": false,
         "components": {
           "type": "object",
           "required": ["boxBorders", "labelBorders", "buttonBorders"],

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "generate:themes": "python3 ../scripts/generate_components.py . --platform typescript --theme light --output src/generated/themes/light.gen.ts && python3 ../scripts/generate_components.py . --platform typescript --theme dark --output src/generated/themes/dark.gen.ts && python3 ../scripts/generate_components.py . --platform typescript --theme oms --output src/generated/themes/oms.gen.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"

@@ -38,6 +38,19 @@ class Task:
     ordinal: int
 
 
+@dataclass(frozen=True)
+class ProjectFieldOption:
+    name: str
+    option_id: str | None
+
+
+@dataclass(frozen=True)
+class ProjectField:
+    name: str
+    data_type: str
+    options: dict[str, ProjectFieldOption]
+
+
 @dataclass
 class Heading:
     level: int
@@ -84,7 +97,7 @@ def run(cmd: list[str], *, dry_run: bool = False, capture: bool = True) -> str:
     return (completed.stdout or "").strip()
 
 
-def run_json(cmd: list[str]) -> dict:
+def run_json(cmd: list[str]) -> object:
     output = run(cmd)
     try:
         return json.loads(output)
@@ -275,6 +288,8 @@ def extract_project_number(value: str) -> str | None:
 
 def list_projects(owner: str, limit: int) -> list[dict]:
     data = run_json(["gh", "project", "list", "--owner", owner, "--format", "json", "-L", str(limit)])
+    if not isinstance(data, dict):
+        raise HandoffError("Expected an object from gh project list.")
     return data.get("projects", [])
 
 
@@ -322,7 +337,7 @@ def load_project_fields(
     limit: int,
     dry_run: bool,
     skip_verify: bool,
-) -> dict[str, str]:
+) -> dict[str, ProjectField]:
     if dry_run and skip_verify:
         return {}
 
@@ -340,8 +355,30 @@ def load_project_fields(
             str(limit),
         ]
     )
+    if not isinstance(data, dict):
+        raise HandoffError("Expected an object from gh project field-list.")
     fields = data.get("fields", [])
-    return {str(field.get("name", "")).casefold(): str(field.get("name", "")) for field in fields}
+    result: dict[str, ProjectField] = {}
+    for field in fields:
+        if not isinstance(field, dict):
+            continue
+        name = str(field.get("name", ""))
+        if not name:
+            continue
+        options = {
+            str(option.get("name", "")).casefold(): ProjectFieldOption(
+                name=str(option.get("name", "")),
+                option_id=str(option["id"]) if option.get("id") else None,
+            )
+            for option in field.get("options", [])
+            if isinstance(option, dict) and option.get("name")
+        }
+        result[name.casefold()] = ProjectField(
+            name=name,
+            data_type=str(field.get("dataType", "")).upper(),
+            options=options,
+        )
+    return result
 
 
 def create_gist(path: Path, *, description: str, public: bool, dry_run: bool) -> str:
@@ -385,20 +422,26 @@ def add_project_item(
     issue_url: str,
     dry_run: bool,
 ) -> None:
-    run(
-        [
-            "gh",
-            "project",
-            "item-add",
-            project_number,
-            "--owner",
-            project_owner,
-            "--url",
-            issue_url,
-        ],
-        dry_run=dry_run,
-        capture=False,
-    )
+    try:
+        run(
+            [
+                "gh",
+                "project",
+                "item-add",
+                project_number,
+                "--owner",
+                project_owner,
+                "--url",
+                issue_url,
+            ],
+            dry_run=dry_run,
+            capture=False,
+        )
+    except HandoffError as error:
+        detail = str(error).casefold()
+        if "already" in detail and ("item" in detail or "project" in detail):
+            return
+        raise
 
 
 def edit_project_item(
@@ -474,6 +517,160 @@ def ensure_existing_markdown(path: Path, label: str) -> None:
         raise HandoffError(f"{label} must be a Markdown file: {path}")
 
 
+def resolve_text_field_updates(
+    field_names: dict[str, ProjectField],
+    *,
+    references_field: str | None,
+    task_gist_field: str | None,
+    adr_spec_gist_field: str | None,
+    require_project_fields: bool,
+    dry_run: bool,
+    skip_verify: bool,
+) -> list[str]:
+    requested_fields = [
+        (references_field, False),
+        (task_gist_field, True),
+        (adr_spec_gist_field, True),
+    ]
+    resolved: list[str] = []
+    for requested_field, explicitly_requested in requested_fields:
+        if not requested_field:
+            continue
+        field = field_names.get(requested_field.casefold())
+        if field is None and dry_run and skip_verify:
+            resolved.append(requested_field)
+            continue
+        message: str | None = None
+        if field is None:
+            message = f"Project field {requested_field!r} was not found; the Gist links remain in the issue body."
+        elif field.data_type != "TEXT":
+            message = f"Project field {field.name!r} must be a text field, not {field.data_type or 'an unknown type'}."
+        if message:
+            if require_project_fields or explicitly_requested:
+                raise HandoffError(message)
+            print(f"Warning: {message}", file=sys.stderr)
+            continue
+        resolved.append(field.name)
+    return resolved
+
+
+def resolve_status_field(
+    field_names: dict[str, ProjectField],
+    *,
+    status: str | None,
+    dry_run: bool,
+    skip_verify: bool,
+) -> tuple[str, str] | None:
+    if not status:
+        return None
+    field = field_names.get("status")
+    if field is None and dry_run and skip_verify:
+        return "Status", status
+    if field is None:
+        raise HandoffError("Project field 'Status' was not found.")
+    if field.data_type != "SINGLE_SELECT":
+        raise HandoffError(f"Project field {field.name!r} must be a single-select field, not {field.data_type or 'an unknown type'}.")
+    option = field.options.get(status.casefold())
+    if option is None:
+        available = ", ".join(option.name for option in field.options.values()) or "none"
+        raise HandoffError(f"Status value {status!r} is not available for {field.name!r}. Available values: {available}")
+    return field.name, option.name
+
+
+def state_signature(
+    *,
+    repo: str,
+    project_owner: str,
+    project_number: str,
+    task_file: Path,
+    adr_spec_file: Path,
+    title_prefix: str,
+) -> str:
+    digest = hashlib.sha256()
+    for value in (
+        repo,
+        project_owner,
+        project_number,
+        title_prefix,
+        task_file.read_text(encoding="utf-8"),
+        adr_spec_file.read_text(encoding="utf-8"),
+    ):
+        digest.update(value.encode("utf-8"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def default_state_path(tasks_file: Path) -> Path:
+    return tasks_file.with_name(f".{tasks_file.stem}.github-handoff-state.json")
+
+
+def load_state(path: Path, *, signature: str, dry_run: bool) -> dict:
+    if dry_run:
+        return {"version": 1, "signature": signature, "tasks": {}}
+    if not path.exists():
+        return {"version": 1, "signature": signature, "tasks": {}}
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise HandoffError(f"State file is not valid JSON: {path}") from exc
+    if not isinstance(state, dict) or state.get("version") != 1 or not isinstance(state.get("tasks"), dict):
+        raise HandoffError(f"State file has an unsupported format: {path}")
+    if state.get("signature") != signature:
+        raise HandoffError(
+            f"State file {path} belongs to a different handoff. Pass --state-file with a new path or remove the stale state file."
+        )
+    return state
+
+
+def save_state(path: Path, state: dict, *, dry_run: bool) -> None:
+    if dry_run:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(f"{path.suffix}.tmp")
+    temporary.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def task_marker(task: Task, *, signature: str) -> str:
+    digest = hashlib.sha256()
+    for value in (signature, str(task.ordinal), task.title, task.body):
+        digest.update(value.encode("utf-8"))
+        digest.update(b"\0")
+    return digest.hexdigest()[:20]
+
+
+def find_existing_issue(*, repo: str, marker: str, dry_run: bool) -> str | None:
+    if dry_run:
+        return None
+    data = run_json(
+        [
+            "gh",
+            "issue",
+            "list",
+            "-R",
+            repo,
+            "--state",
+            "all",
+            "--search",
+            f"handoff-to-github:{marker} in:body",
+            "--json",
+            "url,body",
+            "--limit",
+            "10",
+        ]
+    )
+    if not isinstance(data, list):
+        raise HandoffError("Expected a list from gh issue list.")
+    matches = [
+        str(issue["url"])
+        for issue in data
+        if isinstance(issue, dict) and f"handoff-to-github:{marker}" in str(issue.get("body", "")) and issue.get("url")
+    ]
+    if len(matches) > 1:
+        raise HandoffError(f"Found multiple existing issues for handoff marker {marker}; resolve the duplicates before resuming.")
+    return matches[0] if matches else None
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Create GitHub issues from a Markdown task file and add them to a GitHub Project."
@@ -511,6 +708,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-title-length", type=int, default=180, help="Maximum issue title length.")
     parser.add_argument("--project-list-limit", type=int, default=100, help="Maximum projects to list.")
     parser.add_argument("--field-list-limit", type=int, default=100, help="Maximum project fields to list.")
+    parser.add_argument(
+        "--state-file",
+        type=Path,
+        help="Local progress file for safe resume. Defaults beside the task file.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print gh commands without creating anything.")
     parser.add_argument(
         "--skip-project-verify",
@@ -550,57 +752,71 @@ def main() -> int:
         skip_verify=args.skip_project_verify,
     )
 
+    text_field_names = resolve_text_field_updates(
+        field_names,
+        references_field=args.references_field,
+        task_gist_field=args.task_gist_field,
+        adr_spec_gist_field=args.adr_spec_gist_field,
+        require_project_fields=args.require_project_fields,
+        dry_run=args.dry_run,
+        skip_verify=args.skip_project_verify,
+    )
+    status_update = resolve_status_field(
+        field_names,
+        status=args.status,
+        dry_run=args.dry_run,
+        skip_verify=args.skip_project_verify,
+    )
+    signature = state_signature(
+        repo=repo,
+        project_owner=project_owner,
+        project_number=project_number,
+        task_file=args.tasks_file,
+        adr_spec_file=args.adr_spec_file,
+        title_prefix=args.title_prefix,
+    )
+    state_path = args.state_file or default_state_path(args.tasks_file)
+    state = load_state(state_path, signature=signature, dry_run=args.dry_run)
+
     print(f"Repository: {repo}")
     print(f"Project owner: {project_owner}")
     print(f"Project: {project_title} ({project_number})")
     print(f"Tasks: {len(tasks)}")
+    if not args.dry_run:
+        print(f"State file: {state_path}")
 
-    task_gist_url = create_gist(
-        args.tasks_file,
-        description=f"Task handoff source for {repo}",
-        public=args.public_gists,
-        dry_run=args.dry_run,
-    )
-    adr_spec_gist_url = create_gist(
-        args.adr_spec_file,
-        description=f"ADR/spec handoff source for {repo}",
-        public=args.public_gists,
-        dry_run=args.dry_run,
-    )
+    task_gist_url = state.get("task_gist_url")
+    if not task_gist_url:
+        task_gist_url = create_gist(
+            args.tasks_file,
+            description=f"Task handoff source for {repo}",
+            public=args.public_gists,
+            dry_run=args.dry_run,
+        )
+        state["task_gist_url"] = task_gist_url
+        save_state(state_path, state, dry_run=args.dry_run)
+
+    adr_spec_gist_url = state.get("adr_spec_gist_url")
+    if not adr_spec_gist_url:
+        adr_spec_gist_url = create_gist(
+            args.adr_spec_file,
+            description=f"ADR/spec handoff source for {repo}",
+            public=args.public_gists,
+            dry_run=args.dry_run,
+        )
+        state["adr_spec_gist_url"] = adr_spec_gist_url
+        save_state(state_path, state, dry_run=args.dry_run)
 
     references_text = f"Task gist: {task_gist_url}\nADR/spec gist: {adr_spec_gist_url}"
-    text_field_updates = [
-        (args.references_field, references_text, False),
-        (args.task_gist_field, task_gist_url, True),
-        (args.adr_spec_gist_field, adr_spec_gist_url, True),
-    ]
-    resolved_text_field_updates: list[tuple[str, str]] = []
-    for requested_field, value, explicitly_requested in text_field_updates:
-        if not requested_field:
-            continue
-        actual_field = field_names.get(requested_field.casefold())
-        if not actual_field and args.dry_run and args.skip_project_verify:
-            actual_field = requested_field
-        if not actual_field:
-            message = (
-                f"Project field {requested_field!r} was not found; "
-                "the Gist links remain in the issue body."
-            )
-            if args.require_project_fields or explicitly_requested:
-                raise HandoffError(message)
-            print(f"Warning: {message}", file=sys.stderr)
-            continue
-        resolved_text_field_updates.append((actual_field, value))
-
-    status_field = None
-    if args.status:
-        status_field = field_names.get("status")
-        if not status_field and args.dry_run and args.skip_project_verify:
-            status_field = "Status"
-        if not status_field:
-            raise HandoffError("Project field 'Status' was not found.")
+    text_field_updates = [(field, references_text) for field in text_field_names if field.casefold() == args.references_field.casefold()]
+    text_field_updates.extend((field, task_gist_url) for field in text_field_names if args.task_gist_field and field.casefold() == args.task_gist_field.casefold())
+    text_field_updates.extend((field, adr_spec_gist_url) for field in text_field_names if args.adr_spec_gist_field and field.casefold() == args.adr_spec_gist_field.casefold())
 
     for task in tasks:
+        marker = task_marker(task, signature=signature)
+        task_state = state["tasks"].setdefault(str(task.ordinal), {"marker": marker, "fields_applied": []})
+        if task_state.get("marker") != marker:
+            raise HandoffError(f"State for task {task.ordinal} does not match the current task document.")
         issue_body = build_issue_body(
             task,
             task_file=args.tasks_file,
@@ -608,23 +824,36 @@ def main() -> int:
             task_gist_url=task_gist_url,
             adr_spec_gist_url=adr_spec_gist_url,
         )
-        issue_url = create_issue(
-            task,
-            repo=repo,
-            body=issue_body,
-            title_prefix=args.title_prefix,
-            labels=args.label,
-            assignees=args.assignee,
-            dry_run=args.dry_run,
-        )
-        add_project_item(
-            project_number=project_number,
-            project_owner=project_owner,
-            issue_url=issue_url,
-            dry_run=args.dry_run,
-        )
+        issue_body = f"{issue_body}\n\n<!-- handoff-to-github:{marker} -->"
+        issue_url = task_state.get("issue_url") or find_existing_issue(repo=repo, marker=marker, dry_run=args.dry_run)
+        if not issue_url:
+            issue_url = create_issue(
+                task,
+                repo=repo,
+                body=issue_body,
+                title_prefix=args.title_prefix,
+                labels=args.label,
+                assignees=args.assignee,
+                dry_run=args.dry_run,
+            )
+        task_state["issue_url"] = issue_url
+        save_state(state_path, state, dry_run=args.dry_run)
 
-        for actual_field, value in resolved_text_field_updates:
+        if not task_state.get("project_item_added"):
+            add_project_item(
+                project_number=project_number,
+                project_owner=project_owner,
+                issue_url=issue_url,
+                dry_run=args.dry_run,
+            )
+            task_state["project_item_added"] = True
+            save_state(state_path, state, dry_run=args.dry_run)
+
+        applied_updates = set(task_state.get("fields_applied", []))
+        for actual_field, value in text_field_updates:
+            update_key = f"text\0{actual_field}\0{value}"
+            if update_key in applied_updates:
+                continue
             edit_project_item(
                 project_number=project_number,
                 project_owner=project_owner,
@@ -634,19 +863,29 @@ def main() -> int:
                 value_kind="text",
                 dry_run=args.dry_run,
             )
+            applied_updates.add(update_key)
+            task_state["fields_applied"] = sorted(applied_updates)
+            save_state(state_path, state, dry_run=args.dry_run)
 
-        if args.status and status_field:
+        if status_update:
+            status_key = f"single-select\0{status_update[0]}\0{status_update[1]}"
+        else:
+            status_key = None
+        if status_update and status_key not in applied_updates:
             edit_project_item(
                 project_number=project_number,
                 project_owner=project_owner,
                 issue_url=issue_url,
-                field=status_field,
-                value=args.status,
+                field=status_update[0],
+                value=status_update[1],
                 value_kind="single-select",
                 dry_run=args.dry_run,
             )
+            applied_updates.add(status_key)
+            task_state["fields_applied"] = sorted(applied_updates)
+            save_state(state_path, state, dry_run=args.dry_run)
 
-        print(f"Created: {issue_url}")
+        print(f"Created or resumed: {issue_url}")
 
     if args.dry_run:
         print("Dry run complete; no GitHub objects were created.")
