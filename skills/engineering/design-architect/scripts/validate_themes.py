@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import sys
 from pathlib import Path
@@ -23,17 +24,40 @@ def load_generator():
     return module
 
 
-def main() -> int:
-    generator = load_generator()
-    count = 0
-    validate_spec(THEMES_ROOT / "SPEC.md")
-    for theme_path in sorted(THEMES_ROOT.glob("*.json")):
-        if theme_path.name == "theme.schema.json":
-            continue
-        generator.read_theme(theme_path.stem)
-        count += 1
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "themes_dir",
+        nargs="?",
+        type=Path,
+        default=THEMES_ROOT,
+        help=f"Directory containing theme JSON files and SPEC.md. Defaults to {THEMES_ROOT}.",
+    )
+    return parser.parse_args()
 
-    print(f"Validated {count} theme configuration files and themes/SPEC.md.")
+
+def main() -> int:
+    args = parse_args()
+    themes_root = args.themes_dir
+    if not themes_root.is_dir():
+        print(f"error: {themes_root} is missing.", file=sys.stderr)
+        return 2
+
+    generator = load_generator()
+    generator.THEMES_ROOT = themes_root
+    count = 0
+    try:
+        validate_spec(themes_root / "SPEC.md")
+        for theme_path in sorted(themes_root.glob("*.json")):
+            if theme_path.name == "theme.schema.json":
+                continue
+            generator.read_theme(theme_path.stem)
+            count += 1
+    except ValueError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
+
+    print(f"Validated {count} theme configuration files and {themes_root / 'SPEC.md'}.")
     return 0
 
 

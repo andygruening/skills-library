@@ -3,9 +3,14 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import sys
+
+
+ROOT = Path(__file__).resolve().parents[1]
+THEMES_ROOT = ROOT / "themes"
 
 
 def read_theme(path: Path) -> dict[str, str]:
@@ -19,9 +24,21 @@ def read_theme(path: Path) -> dict[str, str]:
     return data
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "themes_dir",
+        nargs="?",
+        type=Path,
+        default=THEMES_ROOT,
+        help=f"Directory containing theme JSON files. Defaults to {THEMES_ROOT}.",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
-    skill_root = Path(__file__).resolve().parents[1]
-    themes_root = skill_root / "themes"
+    args = parse_args()
+    themes_root = args.themes_dir
     if not themes_root.is_dir():
         print(f"Themes directory not found: {themes_root}", file=sys.stderr)
         return 1
