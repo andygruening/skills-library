@@ -16,10 +16,6 @@ from pathlib import Path
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$", re.MULTILINE)
 CHECKBOX_RE = re.compile(r"^\s*[-*+]\s+\[[ xX]\]\s+(.+?)\s*$", re.MULTILINE)
 NUMBERED_RE = re.compile(r"^\s*\d+[\.)]\s+(.+?)\s*$", re.MULTILINE)
-TASK_CONTAINER_RE = re.compile(
-    r"\b(task bodies|tasks|implementation tasks|task graph|ticket bodies|issues)\b",
-    re.IGNORECASE,
-)
 TASK_CONTAINER_TITLES = {
     "task bodies",
     "tasks",
@@ -28,7 +24,20 @@ TASK_CONTAINER_TITLES = {
     "ticket bodies",
     "issues",
 }
-TASK_HEADING_RE = re.compile(r"^\s*(task|ticket|issue)\b|^\s*\d+[\.)]\s+", re.IGNORECASE)
+TASK_WORD_PATTERN = r"(?:task|ticket|issue)"
+TASK_NUMERIC_ID_PATTERN = r"#?\d+"
+TASK_HEADING_RE = re.compile(
+    r"^(?:"
+    r"\d+[\.)]\s+\S"
+    rf"|{TASK_WORD_PATTERN}\s+{TASK_NUMERIC_ID_PATTERN}\s*[:.)-]\s+\S"
+    rf"|{TASK_WORD_PATTERN}\s+{TASK_NUMERIC_ID_PATTERN}\s*$"
+    r")",
+    re.IGNORECASE,
+)
+TASK_TITLE_PREFIX_RE = re.compile(
+    rf"^{TASK_WORD_PATTERN}(?:\s+{TASK_NUMERIC_ID_PATTERN})?\s*[:.)-]\s*",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -105,12 +114,17 @@ def strip_markdown_title(value: str) -> str:
 
 def issue_title(raw_title: str, max_length: int) -> str:
     title = strip_markdown_title(raw_title)
-    title = re.sub(r"^(task|ticket|issue)\s*\d*\s*[:.)-]\s*", "", title, flags=re.IGNORECASE)
+    title = TASK_TITLE_PREFIX_RE.sub("", title)
     title = re.sub(r"^\d+[\.)]\s*", "", title)
     title = title.strip() or strip_markdown_title(raw_title) or "Untitled task"
     if len(title) > max_length:
         return title[: max_length - 1].rstrip() + "..."
     return title
+
+
+def is_task_container_title(title: str) -> bool:
+    normalized = re.sub(r"\s+", " ", title).strip().casefold()
+    return normalized in TASK_CONTAINER_TITLES
 
 
 def build_headings(markdown: str) -> list[Heading]:
@@ -153,13 +167,13 @@ def is_task_heading(
 ) -> bool:
     if custom_heading_regex and custom_heading_regex.search(heading.title):
         return True
-    if heading.title.casefold() in TASK_CONTAINER_TITLES:
+    if is_task_container_title(heading.title):
         return False
     if TASK_HEADING_RE.search(heading.title):
         return True
     if heading.parent_index is not None:
         parent = headings[heading.parent_index]
-        if TASK_CONTAINER_RE.search(parent.title):
+        if is_task_container_title(parent.title):
             return True
     return False
 
