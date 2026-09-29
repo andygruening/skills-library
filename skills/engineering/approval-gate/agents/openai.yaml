@@ -1,0 +1,4 @@
+interface:
+  display_name: "Approval Gate"
+  short_description: "Summarize and wait before making changes"
+  default_prompt: "Use $approval-gate to summarize this request and wait for my approval before making changes."
