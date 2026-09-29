@@ -8,6 +8,7 @@ Reusable agent skills organized by category.
 
 | Skill | Path | Summary |
 | --- | --- | --- |
+| `approval-gate` | `skills/engineering/approval-gate` | Pauses before implementation, summarizes the request and its assumptions, and waits for the user's explicit approval before making changes. |
 | `decompose-spec` | `skills/engineering/decompose-spec` | Splits `SPEC.md` or another supplied spec/RFC/ADR into domain-owned implementation tasks written to `TASKS.md`, with explicit public interfaces, dependency ordering, contract tests, and integration prompts. |
 | `design-architect` | `skills/engineering/design-architect` | Generates and applies design-system UI components, tokens, wrappers, variants, and layouts for iOS SwiftUI, Android Jetpack Compose/Kotlin, and React TypeScript web apps. |
 | `handoff-to-github` | `skills/engineering/handoff-to-github` | Creates GitHub issue handoffs from Markdown task documents, uploads task and ADR/spec files to Gists, and adds each issue to a verified GitHub Project. |
