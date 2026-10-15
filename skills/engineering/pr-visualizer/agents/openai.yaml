@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Visualizer"
+  short_description: "Turn a pull request into a topic-by-topic slide deck"
+  default_prompt: "Use $pr-visualizer to build a demo deck for PR #123."
