@@ -151,8 +151,8 @@ def is_task_heading(
     headings: list[Heading],
     custom_heading_regex: re.Pattern[str] | None,
 ) -> bool:
-    if custom_heading_regex and custom_heading_regex.search(heading.title):
-        return True
+    if custom_heading_regex:
+        return bool(custom_heading_regex.search(heading.title))
     if heading.title.casefold() in TASK_CONTAINER_TITLES:
         return False
     if TASK_HEADING_RE.search(heading.title):
@@ -174,9 +174,29 @@ def parse_heading_tasks(
     tasks: list[Task] = []
     seen_ranges: set[tuple[int, int]] = set()
 
-    for heading in headings:
-        if not is_task_heading(heading, headings, custom_heading_regex):
+    candidate_indexes = {
+        index
+        for index, heading in enumerate(headings)
+        if is_task_heading(heading, headings, custom_heading_regex)
+    }
+
+    for index, heading in enumerate(headings):
+        if index not in candidate_indexes:
             continue
+
+        if custom_heading_regex is None:
+            # A task's subsections belong in that issue body; only the outermost
+            # heuristic task heading should create an issue. An explicitly
+            # supplied regex, however, is an exact selection of the headings
+            # that should become issues, including nested headings.
+            parent_index = heading.parent_index
+            while parent_index is not None:
+                if parent_index in candidate_indexes:
+                    break
+                parent_index = headings[parent_index].parent_index
+            if parent_index is not None:
+                continue
+
         section_range = (heading.start, heading.end)
         if section_range in seen_ranges:
             continue
@@ -223,7 +243,7 @@ def parse_tasks(
         custom_heading_regex=custom_regex,
         max_title_length=max_title_length,
     )
-    if not tasks:
+    if not tasks and custom_regex is None:
         tasks = parse_list_tasks(markdown, max_title_length=max_title_length)
     if not tasks:
         raise HandoffError(

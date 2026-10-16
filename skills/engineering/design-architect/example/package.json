@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "generate:themes": "python3 ../scripts/generate_example_themes.py",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"

@@ -48,9 +48,18 @@ def remote_head(repo: Path) -> str | None:
 
 
 def choose_base(repo: Path, explicit_base: str | None) -> tuple[str, str]:
-    candidates: list[str] = []
     if explicit_base:
-        candidates.append(explicit_base)
+        if not valid_ref(repo, explicit_base):
+            raise SystemExit(
+                f"Invalid --base reference {explicit_base!r}. "
+                "Pass a branch, tag, or commit that resolves to a commit."
+            )
+        merge_base = git_stdout(["merge-base", explicit_base, "HEAD"], repo, check=False)
+        if not merge_base:
+            raise SystemExit(f"Could not find a merge base between {explicit_base!r} and HEAD.")
+        return explicit_base, merge_base
+
+    candidates: list[str] = []
     head = remote_head(repo)
     if head:
         candidates.append(head)
